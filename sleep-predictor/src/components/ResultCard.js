@@ -139,6 +139,19 @@ const ResultCard = ({ result }) => {
                 <p className="risk-description">{riskDescription}</p>
               </div>
             </div>
+
+            {/* SHAP Results Section */}
+{result.top_factors && result.top_factors.length > 0 && (
+  <div className="shap-section">
+    <h4 className="section-heading">Top Contributing Factors (SHAP):</h4>
+    <ul className="shap-list">
+      {result.top_factors.map((factor, index) => (
+        <li key={index} className="shap-item">🔹 {factor}</li>
+      ))}
+    </ul>
+  </div>
+)}
+
             
             <div className="confidence-metrics">
               <h4 className="section-heading">Confidence Analysis:</h4>

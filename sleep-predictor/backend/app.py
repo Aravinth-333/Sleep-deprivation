@@ -6,6 +6,9 @@ import joblib
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 
+# Import your ML helper
+from ml_pipeline import predict_sleep_deprivation, preprocess_user_input, cat_cols, num_cols, X_train
+
 # -------- Load trained pipeline --------
 pipeline = joblib.load("sleep_deprivation_pipeline.joblib")
 
@@ -14,7 +17,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","http://127.0.0.1:3000"],  
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,15 +64,13 @@ def compute_sleep_duration(bed, wake):
         return np.nan
 
 # -------- Preprocessing function for user input --------
-def preprocess_user_input(user_dict):
+def preprocess_user_input_backend(user_dict):
     df_user = pd.DataFrame([user_dict])
-
     # Add engineered sleep duration
     df_user["sleep_duration_hours"] = df_user.apply(
         lambda row: compute_sleep_duration(row["bedtime"], row["wakeup_time"]), axis=1
     )
-
-    # Convert numeric fields to floats/ints if not None
+    # Fill numeric fields
     numeric_fields = [
         "age", "sleep_latency", "screen_time_hours", "in_bed_phone_use_percent",
         "caffeine_intake", "physical_activity_mins", "diet_meal_timing",
@@ -80,7 +81,6 @@ def preprocess_user_input(user_dict):
     for field in numeric_fields:
         if field in df_user.columns:
             df_user[field] = pd.to_numeric(df_user[field], errors='coerce').fillna(0)
-
     # Drop raw time columns
     df_user = df_user.drop(columns=["bedtime", "wakeup_time"], errors="ignore")
     return df_user
@@ -88,34 +88,41 @@ def preprocess_user_input(user_dict):
 # -------- Prediction endpoint --------
 @app.post("/predict")
 def predict(data: UserInput):
-    print("✅ Incoming request:", data.dict())
     try:
         input_dict = data.dict()
-        print("🚀 Received data in backend:", input_dict, flush=True)  # <-- debug print
+        print("✅ Incoming request:", input_dict, flush=True)
 
-        # Preprocess input
-        processed_df = preprocess_user_input(input_dict)
-        print("🛠 Processed DataFrame:", processed_df.head(), flush=True)  # <-- debug print
+        # Call your helper to get prediction + SHAP top factors
+        shap_result = predict_sleep_deprivation(
+            user_input=input_dict,
+            pipeline=pipeline,
+            X_reference=X_train,  # reference data needed for SHAP
+            cat_cols=cat_cols,
+            num_cols=num_cols,
+            verbose=False,
+            top_n_features=5
+        )
 
-        # Make prediction
-        prediction = pipeline.predict(processed_df)[0]
-        proba = pipeline.predict_proba(processed_df)[0]
+        # Build final response
+        prediction = 1 if shap_result["prediction"] == "Sleep Deprived" else 0
+        prob = shap_result.get("probability", 0.0)
 
         result = {
-            "prediction": int(prediction),
-            "predictionText": "High Risk" if prediction == 1 else "No Risk",
+            "prediction": prediction,
+            "predictionText": shap_result["prediction"],
             "riskLevel": "high" if prediction == 1 else "low",
             "riskDescription": "Signs of possible sleep deprivation" if prediction == 1 else "No major risks detected",
             "confidence": {
-                "no_risk": float(proba[0]),
-                "risk": float(proba[1])
+                "no_risk": round(1 - prob, 3),
+                "risk": round(prob, 3)
             },
-            "riskPercentage": float(proba[1] * 100)
+            "riskPercentage": round(prob * 100, 2),
+            "top_factors": shap_result.get("top_factors", [])
         }
-        print("✅ Result to send:", result, flush=True)  # <-- debug print
+
+        print("✅ Result to send:", result, flush=True)
         return result
 
     except Exception as e:
-        print("❌ Error occurred:", str(e), flush=True)  # <-- debug print
+        print("❌ Error occurred:", str(e), flush=True)
         return {"error": str(e)}
-

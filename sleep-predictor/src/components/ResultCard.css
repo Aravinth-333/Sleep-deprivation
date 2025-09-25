@@ -704,6 +704,25 @@
   border-radius: 4px;
   box-shadow: 0 0 10px var(--primary-neon);
 }
+.shap-section {
+  background: rgba(0, 245, 255, 0.05);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+}
+
+.shap-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.shap-item {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #ddd;
+}
 
 .cyber-result-container::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-neon);
