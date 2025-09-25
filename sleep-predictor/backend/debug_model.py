@@ -26,36 +26,36 @@ def debug_model():
         print("\n🧪 Testing with high-risk profile...")
         
         test_data = {
-            'age': 25,
-            'gender': 'Male',
-            'sleep_hours': 4.5,  # Very low
-            'sleep_quality': 3,   # Poor
-            'bedtime': '02:00',   # Very late
-            'wakeup_time': '06:30',
-            'sleep_latency': 60,  # High
-            'screen_time_hours': 12, # Very high
-            'in_bed_phone_use_percent': 90, # Very high
-            'caffeine_intake': 400, # High
-            'physical_activity_mins': 10, # Very low
-            'diet_meal_timing': 1, # Poor
-            'water_intake_liters': 1.0, # Low
-            'stress_level': 9, # Very high
-            'day_type': 'Weekday',
-            'occupation_type': 'Engineer',
-            'study_or_work_hours': 12.0, # Very high
-            'energy_level': 2, # Very low
-            'preferred_sleep_time_category': 'Night Owl',
-            'social_media_hours': 6.0, # High
-            'light_exposure_before_bed': 'High',
-            'sleep_consistency_score': 2, # Very poor
-            'daily_commute_time_mins': 90, # High
-            'afternoon_naps': 0,
-            'time_spent_outdoors_daily': 15, # Very low
-            'smoking': 'Regular',
-            'alcohol_habit': 'Heavy',
-            'sleep_environment_quality': 'Poor',
-            'medical_conditions': 'Anxiety',
-            'work_shift_type': 'Night Shift'
+  "age": 25,
+  "gender": "Male",
+  "sleep_hours": 4.5,
+  "sleep_quality": 3,
+  "bedtime": "02:00",
+  "wakeup_time": "06:30",
+  "sleep_latency": 60,
+  "screen_time_hours": 12,
+  "in_bed_phone_use_percent": 90,
+  "caffeine_intake": 400,
+  "physical_activity_mins": 10,
+  "diet_meal_timing": 1,
+  "water_intake_liters": 1.0,
+  "stress_level": 9,
+  "day_type": "Weekday",
+  "occupation_type": "Healthcare Professional",
+  "study_or_work_hours": 12,
+  "energy_level": 2,
+  "preferred_sleep_time_category": "Night Owl",
+  "social_media_hours": 6,
+  "light_exposure_before_bed": "High",
+  "sleep_consistency_score": 2,
+  "daily_commute_time_mins": 90,
+  "afternoon_naps": 0,
+  "time_spent_outdoors_daily": 15,
+  "smoking": "Regular",
+  "alcohol_habit": "Heavy",
+  "sleep_environment_quality": "Poor",
+  "medical_conditions": "Anxiety",
+  "work_shift_type": "Night Shift"
         }
         
         # Test preprocessing
