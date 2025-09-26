@@ -5,6 +5,16 @@ from typing import Optional
 import joblib
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+
+# Load API key
+load_dotenv()
+api_key = os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("❌ GOOGLE_API_KEY not found in environment variables")
+genai.configure(api_key=api_key)
 
 # Import your ML helper
 from ml_pipeline import predict_sleep_deprivation, preprocess_user_input, cat_cols, num_cols, X_train
@@ -62,6 +72,41 @@ def compute_sleep_duration(bed, wake):
         return ((wake_minutes - bed_minutes) % (24 * 60)) / 60.0
     except:
         return np.nan
+    
+
+def generate_recommendations(user_input, prediction_result):
+    # Convert top factors to readable text
+    top_factors_text = "\n".join(
+        [f"- {factor}" for factor in prediction_result.get("top_factors", [])]
+    )
+
+    prompt = f"""
+    The following person has been evaluated for sleep deprivation risk.
+
+    Prediction: {prediction_result.get('predictionText', 'N/A')}
+    Probability of deprivation: {prediction_result.get('riskPercentage', 'N/A')}%
+
+    Key contributing factors:
+    {top_factors_text if top_factors_text else '- No specific factors identified.'}
+
+    User profile:
+    {user_input}
+
+    Task: Provide **5 personalized, actionable recommendations** for improving sleep health.
+    - Be concise (1–2 sentences each).
+    - Use a supportive, empathetic tone.
+    - Address the specific risk factors mentioned in the "Key contributing factors" section.
+    - Ensure the recommendations are distinct and not repetitive.
+    """
+
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    response = model.generate_content(prompt)
+
+    # Cleanup response into list
+    recs = response.text.strip().split("\n")
+    recs = [r.lstrip("-• ").strip() for r in recs if r.strip()]
+    return recs
+
 
 # -------- Preprocessing function for user input --------
 def preprocess_user_input_backend(user_dict):
@@ -120,6 +165,10 @@ def predict(data: UserInput):
             "top_factors": shap_result.get("top_factors", [])
         }
 
+
+# ✨ Add AI recommendations
+        ai_recommendations = generate_recommendations(input_dict, result)
+        result["ai_recommendations"] = ai_recommendations
         print("✅ Result to send:", result, flush=True)
         return result
 

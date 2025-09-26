@@ -188,19 +188,20 @@ const ResultCard = ({ result }) => {
             </div>
           </div>
 
-          {riskInfo.recommendations && riskInfo.recommendations.length > 0 && (
-            <div className="recommendations-section">
-              <h4 className="section-heading">Personalized Recommendations:</h4>
-              <ul className="cyber-recommendations-list">
-                {riskInfo.recommendations.map((rec, index) => (
-                  <li key={index} className="cyber-recommendation-item">
-                    <span className="rec-bullet">⚡</span>
-                    <span>{rec}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+         {result.ai_recommendations && result.ai_recommendations.length > 0 && (
+  <div className="recommendations-section">
+    <h4 className="section-heading">Personalized Recommendations (AI-Powered):</h4>
+    <ul className="cyber-recommendations-list">
+      {result.ai_recommendations.map((rec, index) => (
+        <li key={index} className="cyber-recommendation-item">
+          <span className="rec-bullet">⚡</span>
+          <span>{rec}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
         </div>
 
         <div className="result-footer">
